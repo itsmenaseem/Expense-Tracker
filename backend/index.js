@@ -1,16 +1,21 @@
 import express, { urlencoded } from "express"
 import cookieParser from "cookie-parser"
 import "dotenv/config"
+import { notFound } from "./middlewares/notFound.middleware.js"
+import { errorMiddleware } from "./middlewares/error.middleware.js"
+import { connectToDB } from "./config/db.config.js"
 const app = express()
 
 app.use(urlencoded({extended:true}))
 app.use(cookieParser())
 app.use(express.json())
-
+app.use(notFound)
+app.use(errorMiddleware)
 const PORT = process.env.PORT || 5000
 
 async function startServer(){
     try {
+        await connectToDB()
         app.listen(PORT,()=>{
             console.log(`server is listen of on port: ${PORT}`);
         })
