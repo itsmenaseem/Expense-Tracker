@@ -17,6 +17,7 @@ export const authMiddleware = function(req,res,next){
         req.user = decode
         next()
     } catch (error) {
-        return next(new CustomError(error.message,error.statusCode))
+        console.log(error.message);
+        return next(new CustomError("invalid or expire token",401))
     }
 }
