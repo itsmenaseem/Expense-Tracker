@@ -70,3 +70,5 @@ userSchema.methods.generateRefreshToken = function(){
 userSchema.methods.comparePassword = async function(password){
     return await bcryptjs.compare(password,this.password)
 }
+
+export const User = mongoose.model("user",userSchema)
