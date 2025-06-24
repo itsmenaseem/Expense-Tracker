@@ -1,9 +1,11 @@
+import mongoose from "mongoose";
 import { User } from "../models/user.model.js";
 import { AsyncHandler } from "../utils/asyncHandler.js";
 import { CustomError } from "../utils/customError.js";
 import jwt from "jsonwebtoken"
 
 export const signup = AsyncHandler(async (req, res, next) => {
+     if(!req.body)return next(new CustomError("All fields are required", 400))
     const { email, password, name } = req.body
     if (!email || !password || !name) return next(new CustomError("All fields are required", 400))
     const existingUser = await User.findOne({ email })
@@ -26,6 +28,7 @@ export const signup = AsyncHandler(async (req, res, next) => {
     })
 })
 export const login = AsyncHandler(async (req, res, next) => {
+    if(!req.body)return next(new CustomError("All fields are required", 400))
     const { email, password } = req.body
     if (!email || !password) return next(new CustomError("All fields are required", 400))
     const user = await User.findOne({ email })
@@ -64,9 +67,10 @@ export const logout = AsyncHandler((async (req, res, next) => {
 
 export const refresh = AsyncHandler(async (req, res, next) => {
     const token = req.cookies["refresh-token"]
-    if (!token) return next(new CustomError("missing refresh token", 401))
+    if (!token) return next(new CustomError("missing refresh token", 400))
     try {
         const decode = jwt.verify(token, process.env.JWT_SECRET)
+        if(!mongoose.Types.ObjectId.isValid(decode.id))return next(new CustomError("invalid token",400))
         const user = await User.findById(decode.id)
         if(!user)return next(new CustomError("user not found",404))
         const accessToken = user.generateAccessToken()
