@@ -54,6 +54,17 @@ userSchema.methods.generateAccessToken = function(){
     })
     return accessToken;
 }
+//methods for generating resetPasswordToken
+userSchema.methods.generateResetPasswordToken = function(){
+    const payload = {
+        email:this.email,
+        id:this._id.toString()
+    }
+    const accessToken = jwt.sign(payload,process.env.JWT_SECRET,{
+        expiresIn:"15m"
+    })
+    return accessToken;
+}
 //methods for generating refreshToken
 userSchema.methods.generateRefreshToken = function(){
     const payload = {

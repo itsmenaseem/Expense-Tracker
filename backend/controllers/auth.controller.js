@@ -3,6 +3,7 @@ import { User } from "../models/user.model.js";
 import { AsyncHandler } from "../utils/asyncHandler.js";
 import { CustomError } from "../utils/customError.js";
 import jwt from "jsonwebtoken"
+import "dotenv/config"
 
 export const signup = AsyncHandler(async (req, res, next) => {
      if(!req.body)return next(new CustomError("All fields are required", 400))
@@ -80,6 +81,38 @@ export const refresh = AsyncHandler(async (req, res, next) => {
             accessToken
         })
     } catch (error) {
-        return next(new CustomError("unauthorized or malformed token",403))
+        return next(new CustomError("unauthorized or malformed token",401))
+    }
+})
+
+export const resetPasswordToken = AsyncHandler(async(req,res,next)=>{
+    const email = req.body?.email
+    if(!email)return next(new CustomError("email is required",400))
+    const user = await User.findOne({email})
+    if(!user)return next(new CustomError("user not found",404))
+    const token = user.generateResetPasswordToken()
+    //TODO:send email
+    res.json({
+        success:true,
+        message:"check your inbox"
+    })
+})
+
+export const resetPassword = AsyncHandler(async(req,res,next)=>{
+    if(!req.body)return next(new CustomError("token ans password both are required",400))
+    const {token,password} = req.body
+    if(!token || !password)return next(new CustomError("token ans password both are required",400))
+    try {
+        const decode = jwt.verify(token,process.env.JWT_SECRET)
+        const user = await User.findById(decode.id)
+        if(!user)return next(new CustomError("user not found",404))
+            user.password = password
+            await user.save()
+        res.status(200).json({
+            success:true,
+            message:"password reset successfully"
+        })
+    } catch (error) {
+        return next(new CustomError("malfored token",400))
     }
 })
