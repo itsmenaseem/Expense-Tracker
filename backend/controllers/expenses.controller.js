@@ -1,5 +1,4 @@
 import { Expense } from "../models/expense.model.js";
-import { User } from "../models/user.model.js";
 import { AsyncHandler } from "../utils/asyncHandler.js";
 import { CustomError } from "../utils/customError.js";
 import mongoose from "mongoose";
@@ -19,7 +18,6 @@ export const expensePost = AsyncHandler(async(req,res,next)=>{
         expense
     })
 })
-
 
 export const deleteExpense = AsyncHandler(async(req,res,next)=>{
     const id = req.params?.id
