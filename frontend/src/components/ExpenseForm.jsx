@@ -16,18 +16,18 @@ const ExpenseForm = ({
   description = "Enter the details of your new expense"
 }) => {
   const [formData, setFormData] = useState({
+    _id:initialData?._id || "",
     amount: initialData?.amount?.toString() || "",
     category: initialData?.category || "",
     description: initialData?.description || "",
     date: initialData?.date || ""
   });
-
   const handleSubmit = () => {
     onSubmit(formData);
   };
 
   const handleClose = () => {
-    setFormData({ amount: "", category: "", description: "", date: "" });
+    setFormData({ _id:"",amount: "", category: "", description: "", date: "" });
     onClose();
   };
 

@@ -1,4 +1,5 @@
 // import { useState } from "react"
+import { setAccessToken } from "@/components/authSlice";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -11,11 +12,14 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { refreshToken } from "@/utils/refreshToken";
 import axios from "axios";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 
-export default function LoginForm() {
+export default function Login() {
   const [signupData, setSignupData] = useState({
     email: "",
     "signup-password": "",
@@ -23,7 +27,7 @@ export default function LoginForm() {
     name: "",
   });
   const [loginData, setLoginData] = useState({ _email: "", password: "" });
-
+  const dispatch = useDispatch()
   function handleChange1(e) {
     const { name, value } = e.target;
     setSignupData((prev) => ({
@@ -38,18 +42,50 @@ export default function LoginForm() {
       [name]: value,
     }));
   }
-
+  const navigate = useNavigate()
+  async function singUpSubmit(){
+    try {
+        if(signupData["signup-confirm"] !== signupData["signup-confirm"])return toast.error("passwords does not match")
+        const response = await axios.post(`${import.meta.env.VITE_API_URL}/auth/signup`,{
+          email:signupData.email,password:signupData["signup-password"],name:signupData.name
+        },{withCredentials:true})
+        toast.success(response.data.message)
+        dispatch(setAccessToken(response.data.accessToken))
+        navigate("/dashboard")
+    } catch (error) {
+         const message =
+      error?.response?.data?.message || "Login failed. Please try again.";
+     toast.error(message);
+    }
+  }
   async function loginSubmit(){
     try {
         const response = await axios.post(`${import.meta.env.VITE_API_URL}/auth/login`,{
           email:loginData._email,password:loginData.password
-        })
+        },{withCredentials:true})
         toast.success(response.data.message)
+        dispatch(setAccessToken(response.data.accessToken))
+        navigate("/dashboard")
     } catch (error) {
-        const message = error.response.data.message
-        toast.error(message)
+         const message =
+      error?.response?.data?.message || "Login failed. Please try again.";
+     toast.error(message);
     }
   }
+  useEffect(() => {
+    // Run this once on mount
+    async function fun(){
+        const token = await refreshToken();
+      console.log(token);
+      
+      if(token){
+        dispatch(setAccessToken(token))
+        navigate("/dashboard")
+      }
+    }
+    fun()
+  }, []);
+
   return (
     <div className="flex w-full max-w-sm flex-col gap-6 mx-auto mt-20">
       <Tabs defaultValue="login" className="w-full">
@@ -157,7 +193,7 @@ export default function LoginForm() {
               </div>
             </CardContent>
             <CardFooter>
-              <Button className="w-full cursor-pointer">Signup</Button>
+              <Button className="w-full cursor-pointer" onClick={singUpSubmit}>Signup</Button>
             </CardFooter>
           </Card>
         </TabsContent>

@@ -17,6 +17,10 @@ import DateRangePicker from "@/components/DateRangePicker";
 import { toast } from "react-toastify";
 import { isWithinInterval, parseISO } from "date-fns";
 import axios from "axios";
+import { useDispatch, useSelector } from "react-redux";
+import { clearAccessToken, setAccessToken } from "@/components/authSlice";
+import { refreshToken } from "@/utils/refreshToken";
+import { useNavigate } from "react-router-dom";
 
 const Dashboard = () => {
   const [expenses, setExpenses] = useState([]);
@@ -25,7 +29,7 @@ const Dashboard = () => {
   const [isAddExpenseOpen, setIsAddExpenseOpen] = useState(false);
   const [isEditExpenseOpen, setIsEditExpenseOpen] = useState(false);
   const [editingExpense, setEditingExpense] = useState(null);
-
+  const token = useSelector(state=>state.auth.accessToken)
   const filteredExpenses = expenses.filter((expense) => {
     // Filter by category
     const categoryMatch =
@@ -53,41 +57,29 @@ const Dashboard = () => {
   };
 
   const handleAddExpense = async (formData) => {
-    if (
-      !formData.amount ||
-      !formData.category ||
-      !formData.description ||
-      !formData.date
-    ) {
-      toast({
-        title: "Error",
-        description: "Please fill in all fields",
-        variant: "destructive",
-      });
-      return;
-    }
     try {
-      const response = await axios.post(`${import.meta.env.VITE_API_URL}/expense`,{
-        amount:parseFloat(formData.amount),
-        category: formData.category,
-        description: formData.description,
-        date: formData.date,
-      },{
-        headers:{
-          Authorization:`Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6Im5hc2VlbUBscHUuaW4iLCJpZCI6IjY4NTk5OGI1OWE3ZTdlODc5MzA5NDA4MSIsImlhdCI6MTc1MDgzMTc2NSwiZXhwIjoxNzUwODMyNjY1fQ.guzFTH6YfXPFwIa_FCVTHyaoaGB3TBT5Z24lcT3R29M`
+      const response = await axios.post(
+        `${import.meta.env.VITE_API_URL}/expense`,
+        {
+          amount: parseFloat(formData.amount),
+          category: formData.category,
+          description: formData.description,
+          date: formData.date,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         }
-      })
-      const expense = response.data.expense
+      );
+      toast.success(response.data.message);
+      const expense = response.data.expense;
 
       setExpenses([...expenses, expense]);
       setIsAddExpenseOpen(false);
 
-      toast({
-        title: "Success",
-        description: "Expense added successfully",
-      });
     } catch (error) {
-      toast.error(error.response.data.message)
+      toast.error(error.response.data.message);
     }
   };
 
@@ -96,72 +88,98 @@ const Dashboard = () => {
     setIsEditExpenseOpen(true);
   };
 
-  const handleUpdateExpense = (formData) => {
-    if (
-      !formData.amount ||
-      !formData.category ||
-      !formData.description ||
-      !formData.date
-    ) {
-      toast({
-        title: "Error",
-        description: "Please fill in all fields",
-        variant: "destructive",
-      });
-      return;
+  const handleUpdateExpense = async(formData) => {
+    try {
+        const response = await axios.put(
+        `${import.meta.env.VITE_API_URL}/expense/${formData._id}`,{
+          amount: parseFloat(formData.amount),
+          category: formData.category,
+          description: formData.description,
+          date: formData.date,
+        },
+        {
+          headers: {
+            Authorization:
+              `Bearer ${token}`,
+          },
+        }
+      );
+      toast.success(response.data.message);
+      const updatedExpenses = expenses.map((expense) =>
+        expense._id === editingExpense._id
+          ? {
+              ...expense,
+              amount: parseFloat(formData.amount),
+              category: formData.category,
+              description: formData.description,
+              date: formData.date,
+            }
+          : expense
+      );
+
+      setExpenses(updatedExpenses);
+      setEditingExpense(null);
+      setIsEditExpenseOpen(false);
+    } catch (error) {
+      toast.error(error.response.data.message)
     }
-
-    const updatedExpenses = expenses.map((expense) =>
-      expense._id === editingExpense._id
-        ? {
-            ...expense,
-            amount: parseFloat(formData.amount),
-            category: formData.category,
-            description: formData.description,
-            date: formData.date,
-          }
-        : expense
-    );
-
-    setExpenses(updatedExpenses);
-    setEditingExpense(null);
-    setIsEditExpenseOpen(false);
-
-    toast({
-      title: "Success",
-      description: "Expense updated successfully",
-    });
   };
 
-  const handleDeleteExpense = async(expenseId) => {
-      try {
-       const response = await axios.delete(`${import.meta.env.VITE_API_URL}/expense/${expenseId}`,{
-          headers:{
-            Authorization:'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6Im5hc2VlbUBscHUuaW4iLCJpZCI6IjY4NTk5OGI1OWE3ZTdlODc5MzA5NDA4MSIsImlhdCI6MTc1MDgzMTc2NSwiZXhwIjoxNzUwODMyNjY1fQ.guzFTH6YfXPFwIa_FCVTHyaoaGB3TBT5Z24lcT3R29M'
-          }
-        })
-        toast.success(response.data.message)
-          const updatedExpenses = expenses.filter(
+  const handleDeleteExpense = async (expenseId) => {
+    try {
+      const response = await axios.delete(
+        `${import.meta.env.VITE_API_URL}/expense/${expenseId}`,
+        {
+          headers: {
+            Authorization:
+              `Bearer ${token}`,
+          },
+        }
+      );
+      toast.success(response.data.message);
+      const updatedExpenses = expenses.filter(
         (expense) => expense._id !== expenseId
       );
       setExpenses(updatedExpenses);
-      } catch (error) {
-        
-      }
+    } catch (error) {
+      toast.error(error.response.data.message)
+    }
   };
+  async function logout(){
+      try {
+        await axios.get(`${import.meta.env.VITE_API_URL}/auth/logout`,{
+          withCredentials:true
+        })
+        dispatch(clearAccessToken(null))
+        navigate("/")
+      } catch (error) {
+          toast.error("logout failed")
+      }
+  }
+  const dispatch = useDispatch()
+  const navigate = useNavigate()
   async function getExpenses() {
     try {
       const res = await axios.get(`${import.meta.env.VITE_API_URL}/expense`, {
         headers: {
-          Authorization: `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6Im5hc2VlbUBscHUuaW4iLCJpZCI6IjY4NTk5OGI1OWE3ZTdlODc5MzA5NDA4MSIsImlhdCI6MTc1MDgzMTc2NSwiZXhwIjoxNzUwODMyNjY1fQ.guzFTH6YfXPFwIa_FCVTHyaoaGB3TBT5Z24lcT3R29M`,
+          Authorization: `Bearer ${token}`,
         },
       });
       setExpenses([...res.data.expenses]);
-      console.log(res.data.expenses);
-    } catch (error) {}
+    } catch (error) {
+      const token = refreshToken()
+      if(token){
+        dispatch(setAccessToken(token))
+      }
+      else {
+        dispatch(clearAccessToken(null))
+        navigate("/")
+      }
+    }
   }
   useEffect(() => {
     getExpenses();
+
   }, []);
 
   return (
@@ -183,12 +201,12 @@ const Dashboard = () => {
           <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
             <Button
               onClick={() => setIsAddExpenseOpen(true)}
-              className="w-full sm:w-auto"
+              className="w-full sm:w-auto cursor-pointer"
             >
               <Plus className="w-4 h-4 mr-2" />
               Add Expense
             </Button>
-            <Button className="w-full sm:w-auto">
+            <Button className="w-full sm:w-auto cursor-pointer" onClick={logout}>
               <LogOut className="w-4 h-4 mr-2" />
               Logout
             </Button>
@@ -277,6 +295,7 @@ const Dashboard = () => {
           onClose={() => setIsEditExpenseOpen(false)}
           onSubmit={handleUpdateExpense}
           initialData={editingExpense}
+
           title="Edit Expense"
           description="Update the details of your expense"
         />

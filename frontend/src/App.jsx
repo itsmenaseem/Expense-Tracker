@@ -1,12 +1,22 @@
-import React from 'react'
-import { Button } from './components/ui/button'
+import { Routes, Route } from "react-router-dom";
+import Dashboard from "./pages/Dashboard";
+import Login from "./pages/Login";
+import ProtectedRoute from "./components/ProtectedRoute";
 import "./index.css"
-import LoginForm from './components/LoginForm'
-import Dashboard from './pages/Dashboard'
-export default function App() {
+function App() {
   return (
-    <div>
-     <Dashboard/>
-    </div>
-  )
+    <Routes>
+      <Route path="/" element={<Login />} />
+      <Route
+        path="/dashboard"
+        element={
+          <ProtectedRoute>
+            <Dashboard />
+          </ProtectedRoute>
+        }
+      />
+    </Routes>
+  );
 }
+
+export default App;
