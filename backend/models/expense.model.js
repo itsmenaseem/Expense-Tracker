@@ -5,6 +5,7 @@ const expenseSchema = new mongoose.Schema({
     user_id: {
         type: mongoose.Schema.Types.ObjectId,
         required: [true, "user is required"],
+        select:false,
         ref: 'user'
     },
     category: {
@@ -37,6 +38,6 @@ const expenseSchema = new mongoose.Schema({
         maxlength: [200, "Description should not exceed 200 characters"],
         trim: true
     }
-}, { timestamps: true })
+})
 
 export const Expense = mongoose.model("expense", expenseSchema)

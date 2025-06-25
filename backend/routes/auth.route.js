@@ -6,6 +6,6 @@ const router = express.Router()
 
 router.route("/signup").post(LoginSignupRateLimiter,signup)
 router.route("/login").post(LoginSignupRateLimiter,login)
-router.route("/refresh").post(refresh)
+router.route("/refresh").get(refresh)
 router.route("/logout").get(logout)
 export default router;

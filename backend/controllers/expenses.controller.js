@@ -1,4 +1,5 @@
 import { Expense } from "../models/expense.model.js";
+import { User } from "../models/user.model.js";
 import { AsyncHandler } from "../utils/asyncHandler.js";
 import { CustomError } from "../utils/customError.js";
 import mongoose from "mongoose";
@@ -7,27 +8,27 @@ export const expensePost = AsyncHandler(async(req,res,next)=>{
     if(!req.body)return next(new CustomError("All fields are required except description",400))
     const {category,amount,date,description} = req.body
     if(!category || !amount || !date)return next(new CustomError("All fields are required except description",401))
-    if(amount <= 0)return next(new CustomError("amount must be positive",400))
+    if(amount <= 0)return next(new CustomError("Amount must be positive",400))
     const parseDate = new Date(date)
-    if(isNaN(parseDate))return next(new CustomError("data format should be YYYY-MM-DD",400))
+    if(isNaN(parseDate))return next(new CustomError("Date format should be YYYY-MM-DD",400))
     const id = req.user.id
     const expense = await Expense.create({user_id:req.user._id,amount,category,date:parseDate,description})
     return res.status(201).json({
         success:true,
-        message:"new expense created",
+        message:"New expense created",
         expense
     })
 })
 
 export const deleteExpense = AsyncHandler(async(req,res,next)=>{
     const id = req.params?.id
-    if(!id)return next(new CustomError("expense id missing",400))
-    if(!mongoose.Types.ObjectId.isValid(id))return  next(new CustomError("invalid expense id",400))
+    if(!id)return next(new CustomError("Expense id missing",400))
+    if(!mongoose.Types.ObjectId.isValid(id))return  next(new CustomError("Invalid expense id",400))
     const deletedExpense = await Expense.findOneAndDelete({_id:id,user_id:req.user._id})
-    if(!deletedExpense)return  next(new CustomError("expense not found or unauthorized",404))
+    if(!deletedExpense)return  next(new CustomError("Expense not found or unauthorized",404))
     return res.status(200).json({
         success:true,
-        message:"expense deleted"
+        message:"Expense deleted"
 })
 })
 
@@ -41,7 +42,7 @@ export const getExpenses = AsyncHandler(async(req,res,next)=>{
         if(!expense)return next(new CustomError("expense not found or unauthorized",404))
         return res.status(200).json({
             success:true,
-            message:"expense retrieved successfully",
+            message:"Expense retrieved successfully",
             expense
         })
     }
@@ -59,7 +60,7 @@ export const getExpenses = AsyncHandler(async(req,res,next)=>{
         })
         return res.status(200).json({
             success:true,
-            message:"expense retrieved successfully",
+            message:"Expense retrieved successfully",
             expenses
         })
     }
@@ -67,7 +68,7 @@ export const getExpenses = AsyncHandler(async(req,res,next)=>{
         const expenses = await Expense.find({category,user_id:req.user._id})
         return res.status(200).json({
             success:true,
-            message:"expense retrieved successfully",
+            message:"Expense retrieved successfully",
             expenses
         })
     }
@@ -75,7 +76,7 @@ export const getExpenses = AsyncHandler(async(req,res,next)=>{
         if(!start || !end)return next(new CustomError("select start and end date",400))
         const parseDate1 = new Date(start)
         const parseDate2 = new Date(end)
-        if(isNaN(parseDate1) || isNaN(parseDate2))return next(new CustomError("data format should be YYYY-MM-DD",400))
+        if(isNaN(parseDate1) || isNaN(parseDate2))return next(new CustomError("Date format should be YYYY-MM-DD",400))
         const expenses = await Expense.find({
             user_id:req.user._id,
             date:{
@@ -84,11 +85,17 @@ export const getExpenses = AsyncHandler(async(req,res,next)=>{
             }})
         return res.status(200).json({
             success:true,
-            message:"expense retrieved successfully",
+            message:"Expense retrieved successfully",
             expenses
         })
     }
-    return next(new CustomError("please provide a filter",400))
+    //return all data
+    const expenses = await Expense.find({user_id:req.user._id})
+     return res.status(200).json({
+            success:true,
+            message:"Expense retrieved successfully",
+            expenses
+        })
 })
 
 export const updateExpense = AsyncHandler(async (req, res, next) => {

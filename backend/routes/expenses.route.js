@@ -3,9 +3,9 @@ import { deleteExpense, expensePost, getExpenses, updateExpense } from "../contr
 
 const router = express.Router()
 
-router.route("/expense").post(expensePost)
-router.route("/expense").get(getExpenses)
-router.route("/expense/:id").delete(deleteExpense)
-router.route("/expense/:id").put(updateExpense)
+router.route("/").post(expensePost)
+router.route("/").get(getExpenses)
+router.route("/:id").delete(deleteExpense)
+router.route("/:id").put(updateExpense)
 
 export default router
