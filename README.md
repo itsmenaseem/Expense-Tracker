@@ -1,29 +1,48 @@
-# Expense Tracker 💸
+# 💸 Expense Tracker
 
-A full-stack MERN (MongoDB, Express, React, Node.js) Expense Tracker that allows users to manage and visualize their expenses.
+A full-stack MERN (MongoDB, Express, React, Node.js) application that helps users **track**, **categorize**, and **analyze** their expenses. Built with authentication, filtering, and real-time charts — all wrapped in a modern UI using Tailwind and ShadCN.
+
+---
 
 ## 🔧 Features
 
-- User authentication (login/signup)
-- Add, edit, delete expenses
-- Filter by category and date
-- Charts for category and monthly trends
-- Responsive UI with Tailwind and ShadCN
-- Protected routes with Redux Toolkit
+- 🔐 User authentication (Login / Signup)
+- ➕ Add, ✏️ Edit, and 🗑️ Delete expenses
+- 📂 Filter by category and date range
+- 📊 Dynamic charts (Pie & Line) for visual insights
+- 🛡️ Protected routes with Redux Toolkit
+- 💅 Responsive design using Tailwind CSS & ShadCN
+
+---
 
 ## 🛠️ Tech Stack
 
-- **Frontend**: React, Redux Toolkit, Vite, Tailwind CSS, ShadCN
-- **Backend**: Node.js, Express, MongoDB, Mongoose
-- **Authentication**: JWT, HttpOnly Cookies
+**Frontend**
+- React
+- Vite
+- Redux Toolkit
+- Tailwind CSS
+- ShadCN/UI
 
-## 📦 Installation
+**Backend**
+- Node.js
+- Express
+- MongoDB (Mongoose)
+- JWT (HttpOnly Cookies)
 
-### Frontend
-cd frontend
+---
+
+## ⚙️ Installation & Setup
+
+### 🔹 Backend
+
+```bash
+cd backend
 npm install
 npm run dev
-### Backend
-cd frontend
+
+### 🔹 Frontend
+
+```bash
 npm install
 npm run dev

@@ -89,6 +89,8 @@ const Dashboard = () => {
   };
 
   const handleUpdateExpense = async(formData) => {
+    console.log(formData);
+    
     try {
         const response = await axios.put(
         `${import.meta.env.VITE_API_URL}/expense/${formData._id}`,{

@@ -25,7 +25,7 @@ const ExpenseList = ({ expenses, selectedCategory, onEdit, onDelete }) => {
                 </div>
               </div>
               <div className="flex items-center justify-between sm:justify-end gap-3">
-                <div className="text-lg font-semibold">${expense.amount.toFixed(2)}</div>
+                <div className="text-lg font-semibold">₹{expense.amount.toFixed(2)}</div>
                 <div className="flex gap-2">
                   <Button
                     variant="outline"

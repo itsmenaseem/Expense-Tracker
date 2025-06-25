@@ -23,7 +23,8 @@ const ExpenseForm = ({
     date: initialData?.date || ""
   });
   const handleSubmit = () => {
-    onSubmit(formData);
+      if(title !== "Add New Expense")formData._id = initialData._id
+      onSubmit(formData);
   };
 
   const handleClose = () => {
